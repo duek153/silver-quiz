@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מי רוצה להיות מיליונר? - חתונת הכסף</title>
+  <!-- גופן Heebo (נטען רק כשיש אינטרנט; בלעדיו נשאר גופן המערכת) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+
+    <section id="screen-intro" class="screen active">
+      <div class="intro-box">
+        <p class="kicker">✦ 25 שנה ✦</p>
+        <h1 id="title"></h1>
+        <p id="subtitle" class="subtitle"></p>
+        <button id="btn-start" class="big-btn">מתחילים</button>
+      </div>
+    </section>
+
+    <section id="screen-slideshow" class="screen">
+      <h2>הזיכרונות שלנו</h2>
+      <div id="slides" class="slides"></div>
+      <button id="btn-slides-next" class="big-btn">ממשיכים למשחק</button>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div class="game-layout">
+        <div class="game-main">
+          <div class="lifelines">
+            <button id="ll-fifty" class="lifeline">50:50</button>
+            <button id="ll-phone" class="lifeline">📞 טלפון לילדים</button>
+            <button id="ll-audience" class="lifeline">👥 עזרת הקהל</button>
+          </div>
+          <div id="q-meta" class="q-meta"></div>
+          <div id="question" class="question"></div>
+          <div id="answers" class="answers"></div>
+          <div id="confirm" class="confirm hidden">
+            <span>תשובה סופית?</span>
+            <button id="btn-final" class="big-btn">כן, סופית!</button>
+            <button id="btn-cancel" class="big-btn ghost">ביטול</button>
+          </div>
+        </div>
+        <ol id="ladder" class="ladder"></ol>
+      </div>
+    </section>
+
+    <section id="screen-prize" class="screen">
+      <h2 class="prize-title">מיליון שקל אין לנו... אבל יש לנו את זה:</h2>
+      <div id="ticket" class="ticket">
+        <div class="t-main">
+          <div class="t-head"><span>✈ כרטיס טיסה</span><span>חתונת הכסף · 25 שנה</span></div>
+          <div class="t-field"><small>נוסעים</small><strong id="t-passengers"></strong></div>
+          <div class="t-field t-dest"><small>יעד</small><strong id="t-destination"></strong></div>
+          <div class="t-field"><small>תאריכים</small><strong id="t-dates"></strong></div>
+        </div>
+        <div class="t-stub">
+          <span class="t-25">25</span>
+          <span>שנות אהבה</span>
+          <div class="t-barcode"></div>
+        </div>
+      </div>
+      <button id="btn-prize-next" class="big-btn late">ממשיכים לברכה</button>
+    </section>
+
+    <section id="screen-greeting" class="screen">
+      <h2>ברכה מהילדים</h2>
+      <p id="greeting-text" class="greeting-text"></p>
+      <div id="greeting-photos" class="slides"></div>
+      <button id="btn-restart" class="big-btn">משחק חדש</button>
+    </section>
+    <canvas id="confetti"></canvas>
+
+    <div class="spotlights"><i></i><i></i><i></i><i></i></div>
+    <button id="btn-mute" class="mute-btn" title="השתקה">🔊</button>
+    <div id="modal" class="modal hidden">
+      <div class="modal-box">
+        <h2 id="modal-title"></h2>
+        <div id="modal-body"></div>
+        <button id="modal-close" class="big-btn">חוזרים לשאלה</button>
+      </div>
+    </div>
+    <div id="alarm-overlay"><span>טעות! מנסים שוב</span></div>
+  </main>
+
+  <script src="data/game-data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
