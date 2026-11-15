@@ -44,7 +44,7 @@
   // ===== קונפטי =====
   const cv = $("confetti");
   const c2 = cv.getContext("2d");
-  const COLORS = ["#e9c25a", "#fff3c4", "#d9dee8", "#ffffff", "#5b8cff", "#8e97aa"];
+  const COLORS = ["#b57bff", "#ead9ff", "#d9dee8", "#ffffff", "#5b8cff", "#8e97aa"];
   let parts = [], raf = null;
 
   function newPart(anywhere) {

@@ -34,7 +34,7 @@
             <button id="ll-phone" class="lifeline">📞 טלפון לילדים</button>
             <button id="ll-audience" class="lifeline">👥 עזרת הקהל</button>
           </div>
-          <div id="q-meta" class="q-meta"></div>
+          <div class="q-top"><div id="q-meta" class="q-meta"></div><div id="q-timer" class="q-timer"></div></div>
           <div id="question" class="question"></div>
           <div id="answers" class="answers"></div>
           <div id="confirm" class="confirm hidden">
@@ -75,6 +75,11 @@
 
     <div class="spotlights"><i></i><i></i><i></i><i></i></div>
     <button id="btn-mute" class="mute-btn" title="השתקה">🔊</button>
+    <div id="route" class="route hidden">
+      <h2>המסלול שלכם</h2>
+      <p id="route-msg" class="route-msg"></p>
+      <ol id="route-ladder" class="ladder route-ladder"></ol>
+    </div>
     <div id="modal" class="modal hidden">
       <div class="modal-box">
         <h2 id="modal-title"></h2>

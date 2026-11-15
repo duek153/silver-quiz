@@ -12,13 +12,15 @@
   let removed = [];    // תשובות שנמחקו ב-50:50 בשאלה הנוכחית
   let used = {};       // גלגלי הצלה שכבר נוצלו
   let phoneTimer = null;
+  const SECS = D.questionSeconds || 30;
+  let qLeft = 0, qTimer = null, qPaused = false; // שעון השאלה
   let roundId = 0;    // מבטל טיימרים ישנים של חשיפת תשובות
   let locked = false;  // חוסם לחיצות בזמן חשיפה
 
   const fmt = (n) => n.toLocaleString("he-IL") + " ₪";
 
-  function buildLadder() {
-    const ol = $("ladder");
+  function buildLadder(ol) {
+    ol = ol || $("ladder");
     ol.innerHTML = "";
     // מהגבוה לנמוך
     for (let i = D.ladder.length - 1; i >= 0; i--) {
@@ -50,6 +52,8 @@
     const q = D.questions[current];
     selected = -1;
     if (!isRetry) removed = [];
+    stopQTimer();
+    renderQTimer(SECS);
     locked = true; //נפתח אחרי שכל התשובות נחשפו
     $("confirm").classList.add("hidden");
     $("q-meta").textContent = `שאלה ${current + 1} · ${fmt(D.ladder[current])}`;
@@ -85,7 +89,7 @@
       setTimeout(() => {
         if (round !== roundId) return;
         answerEl(i).classList.remove("hidden-a");
-        if (i === q.a.length - 1) locked = false;
+        if (i === q.a.length - 1) { locked = false; startQTimer(); }
       }, first + i * step);
     });
   }
@@ -112,6 +116,7 @@
     locked = true;
     $("confirm").classList.add("hidden");
     // הבהוב מתח - ארוך יותר בשלבים הקשים
+    stopQTimer();
     document.body.classList.add("suspense");
     answerEl(selected).classList.add("suspense");
     window.Sfx.play("final");
@@ -133,8 +138,7 @@
         if (current >= D.questions.length - 1) {
           window.showPrize();
         } else {
-          current++;
-          showQuestion();
+          showRoute(() => { current++; showQuestion(); });
         }
       }, NEXT_DELAY);
     } else {
@@ -148,6 +152,50 @@
   }
 
   // ===== גלגלי הצלה =====
+  // ===== שעון השאלה =====
+  function renderQTimer(v) {
+    const el = $("q-timer");
+    el.textContent = v;
+    el.classList.toggle("urgent", v <= 5);
+  }
+
+  function stopQTimer() { clearInterval(qTimer); qTimer = null; }
+
+  function startQTimer() {
+    stopQTimer();
+    qLeft = SECS;
+    renderQTimer(qLeft);
+    qTimer = setInterval(() => {
+      if (qPaused) return;
+      qLeft--;
+      if (qLeft <= 0) {            // הזמן נגמר: לא מפסידים, מתחילים מחדש
+        window.Sfx.play("timeup");
+        qLeft = SECS;
+      } else if (qLeft <= 5) {
+        window.Sfx.play("tick");
+      }
+      renderQTimer(qLeft);
+    }, 1000);
+  }
+
+  // ===== מסך המסלול בין שאלה לשאלה =====
+  function showRoute(done) {
+    const ol = $("route-ladder");
+    buildLadder(ol);
+    const mark = (cur) => ol.querySelectorAll("li").forEach((li) => {
+      const lvl = +li.dataset.level;
+      li.classList.toggle("done", lvl < cur);
+      li.classList.toggle("current", lvl === cur);
+    });
+    mark(current); // השלב שנכבש עכשיו
+    const safe = D.safeLevels.includes(current + 1);
+    $("route-msg").textContent = "יש לכם " + fmt(D.ladder[current]) + (safe ? " · נקודת ביטחון!" : "");
+    $("route").classList.remove("hidden");
+    window.Sfx.play("step");
+    setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1700); // עוברים לשלב הבא
+    setTimeout(() => { $("route").classList.add("hidden"); done(); }, 3800);
+  }
+
   function useLifeline(name) {
     if (locked || used[name]) return false;
     used[name] = true;
@@ -159,10 +207,12 @@
     $("modal-title").textContent = title;
     $("modal-body").innerHTML = bodyHtml;
     $("modal").classList.remove("hidden");
+    qPaused = true; // השעון עוצר בזמן גלגל הצלה
   }
 
   function closeModal() {
     clearInterval(phoneTimer);
+    qPaused = false;
     $("modal").classList.add("hidden");
   }
 

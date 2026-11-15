@@ -1,7 +1,7 @@
 // צלילים ומוזיקה: הכל מסונתז בקוד (Web Audio).
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
-  const NAMES = ["click", "final", "correct", "wrong", "tick", "prize",
+  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "prize",
                  "music-easy", "music-medium", "music-hard", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
@@ -80,6 +80,14 @@
 
   const synth = {
     click(t) { tone(900, t, 0.07, { type: "triangle", vol: 0.3, slideTo: 500 }); },
+    timeup(t) {
+      tone(660, t, 0.25, { type: "square", vol: 0.2, cutoff: 1500 });
+      tone(440, t + 0.25, 0.5, { type: "square", vol: 0.2, cutoff: 1500 });
+    },
+    step(t) {
+      tone(523.25, t, 0.12, { type: "triangle", vol: 0.25 });
+      tone(783.99, t + 0.1, 0.3, { type: "triangle", vol: 0.25 });
+    },
     tick(t) { tone(1200, t, 0.04, { type: "square", vol: 0.1 }); },
     final(t) {
       tone(55, t, 1.8, { type: "sine", vol: 0.6 });
@@ -127,10 +135,10 @@
   }
 
   // ===== מוזיקה =====
-  const BPM = { easy: 84, medium: 104, hard: 126, party: 128 };
-  const ROOTS = [73.42, 58.27, 49.0, 55.0];                    // רה, סי במול, סול, לה
-  const OST_MED = [293.66, 349.23, 440.0, 349.23];
-  const OST_HARD = [293.66, 440.0, 349.23, 440.0, 587.33, 440.0, 349.23, 329.63];
+  const BPM = { easy: 92, medium: 112, hard: 132, party: 128 };
+  const ROOTS = [110.0, 87.31, 73.42, 82.41];   // לה מינור, פה, רה מינור, מי
+  const THIRDS = [1.189, 1.26, 1.189, 1.26];
+  const MELODY = [[659.25, 523.25], [698.46, 440.0], [587.33, 698.46], [659.25, 830.61]];
   const PARTY_PROG = [1, 4 / 3, 3 / 2, 1];
   const PARTY_ARP = [1, 1.26, 1.498, 2, 1.498, 1.26, 1.498, 2];
 
@@ -144,23 +152,18 @@
       if (p === 0) chord([base, base * 1.26, base * 1.498], t, d * 8, { type: "sawtooth", vol: 0.05, cutoff: 1800, attack: 0.05, dest: out });
       return;
     }
-    // מוזיקת מתח: פעימת לב + דרון, ובשלבים הקשים נוספות שכבות
-    const r = ROOTS[Math.floor(s / 16) % 4];
-    const k = r / ROOTS[0];
-    if (p === 0 || p === 3) tone(r, t, 0.4, { type: "sine", vol: 0.55, slideTo: r * 0.8, dest: out });
-    if (s % 16 === 0) {
-      chord([r * 2, r * 3], t, d * 16, { type: "sawtooth", vol: 0.06, cutoff: 600, attack: 0.4, dest: out });
-      if (mode === "hard") tone(r * 4 * 1.0595, t, d * 16, { type: "sawtooth", vol: 0.03, cutoff: 900, attack: 0.6, dest: out });
+    // מוזיקת מתח: בס פועם, שעון מתקתק, מיתרים ומנגינה; בשלבים הקשים נוספות שכבות
+    const bar = Math.floor(s / 8) % 4;
+    const r = ROOTS[bar], third = THIRDS[bar];
+    const lvl = mode === "easy" ? 0 : mode === "medium" ? 1 : 2;
+    if (lvl > 0 || p % 2 === 0) tone(r, t, d * 0.9, { type: "sawtooth", vol: 0.26, cutoff: 260 + lvl * 120, dest: out });
+    if (p % [4, 2, 1][lvl] === 0) {
+      noise(t, 0.025, 0.07, 5000, out);
+      tone(p % 4 === 0 ? 1800 : 1400, t, 0.03, { type: "square", vol: 0.04, dest: out });
     }
-    if (mode === "medium") {
-      if (p % 2 === 0) tone(OST_MED[(s / 2) % 4] * k, t, d * 1.5, { type: "triangle", vol: 0.07, dest: out });
-      if (p === 6) tone(r, t, 0.3, { type: "sine", vol: 0.4, dest: out });
-    }
-    if (mode === "hard") {
-      tone(OST_HARD[p] * k, t, d, { type: "triangle", vol: 0.09, dest: out });
-      noise(t, 0.03, 0.05, 6000, out);
-      if (p % 2 === 0) tone(r, t, 0.2, { type: "sine", vol: 0.35, dest: out });
-    }
+    if (p === 0) chord([r * 2, r * 2 * third, r * 3], t, d * 8, { type: "sawtooth", vol: 0.045, cutoff: 900, attack: 0.3, dest: out });
+    if (lvl > 0 && p % 4 === 0) tone(MELODY[bar][p / 4], t, d * 3.5, { type: "triangle", vol: 0.09, attack: 0.03, dest: out });
+    if (lvl === 2) tone(r * 8 * [1, third, 1.498, 2, 1.498, third, 1, third][p], t, d * 0.8, { type: "square", vol: 0.035, cutoff: 2400, dest: out });
   }
 
   function stopMusic() {
