@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const LETTERS = ["א", "ב", "ג", "ד"];
   const REVEAL_DELAY = { easy: 2500, medium: 3500, hard: 5000 };  // זמן מתח לפני חשיפה (יעודן בשלב העיצוב)
+  const REVEAL_FILE = { easy: 7000, medium: 10000, hard: 14000 }; // כשיש קובץ "תשובה סופית" ארוך
   const NEXT_DELAY = 2500;     // זמן אחרי תשובה נכונה לפני השאלה הבאה
   const WRONG_DELAY_DEFAULT = 3000;  // זמן אזעקה/אדום לפני ניסיון חוזר
 
@@ -86,8 +87,14 @@
       box.appendChild(b);
     });
     updateLadder();
-    if (!isRetry && current === 0 && window.Sfx.has("question")) { window.Sfx.play("question"); window.Sfx.music(null); } // פתיחת המשחק: צליל "שאלה" מותאם
-    else window.Sfx.music(difficultyOf(current)); // מתגברת לפי שלב הקושי
+    // צליל פתיחת שאלה (קבצים מותאמים): "לצ-פליי" בשאלה 1, "question" בשאר; אחריו מתחילה מוזיקת המתח
+    const sting = isRetry ? null : (current === 0 && window.Sfx.has("lets-play")) ? "lets-play" : window.Sfx.has("question") ? "question" : null;
+    if (sting) {
+      const qIdx = current;
+      window.Sfx.music(null);
+      window.Sfx.play(sting);
+      setTimeout(() => { if (current === qIdx && !document.body.classList.contains("suspense")) window.Sfx.music(difficultyOf(current)); }, 10300);
+    } else window.Sfx.music(difficultyOf(current)); // מתגברת לפי שלב הקושי
 
     //הופעת השאלה, ואז התשובות אחת אחת
     const qEl = $("question");
@@ -133,14 +140,16 @@
     stopQTimer();
     document.body.classList.add("suspense");
     answerEl(selected).classList.add("suspense");
+    if (window.Sfx.has("final")) window.Sfx.music(null); // קובץ מותאם: מחליף את מוזיקת השאלה
     window.Sfx.play("final");
-    setTimeout(reveal, REVEAL_DELAY[difficultyOf(current)]);
+    setTimeout(reveal, (window.Sfx.has("final") ? REVEAL_FILE : REVEAL_DELAY)[difficultyOf(current)]);
   }
 
   function reveal() {
     const q = D.questions[current];
     document.body.classList.remove("suspense");
     answerEl(selected).classList.remove("suspense");
+    window.Sfx.stop("final");
     window.Sfx.music(null);
     window.Sfx.play(selected === q.correct ? "correct" : "wrong");
     if (selected === q.correct) {
@@ -215,9 +224,9 @@
     } else ph.classList.remove("on");
     $("route").classList.remove("hidden");
     $("route").classList.toggle("safe", safe);
-    if (safe) { window.Sfx.play("safe"); window.confettiBurst(3800); } else window.Sfx.play("whoosh");
+    if (safe) { window.Sfx.play(window.Sfx.has("commercial-break") ? "commercial-break" : "safe"); window.confettiBurst(4500); } else window.Sfx.play("whoosh");
     setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1700); // עוברים לשלב הבא
-    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? 5200 : 3800);
+    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? (window.Sfx.has("commercial-break") ? 10500 : 5200) : 3800);
   }
 
   function useLifeline(name) {
@@ -236,6 +245,7 @@
 
   function closeModal() {
     clearInterval(phoneTimer);
+    window.Sfx.stop("phone");
     qPaused = false;
     $("modal").classList.add("hidden");
   }
@@ -257,6 +267,7 @@
       '<button id="timer-start" class="big-btn">התקשרתם? מפעילים טיימר</button>');
     $("timer-start").onclick = () => {
       $("timer-start").remove();
+      window.Sfx.play("phone"); // קובץ מותאם לשיחה (אם קיים)
       let left = 30;
       const t = $("timer");
       phoneTimer = setInterval(() => {

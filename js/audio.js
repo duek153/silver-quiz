@@ -2,7 +2,7 @@
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
   const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "whoosh", "introhit", "prize",
-                 "music-easy", "music-medium", "music-hard", "music-intro", "question", "music-party"];
+                 "music-easy", "music-medium", "music-hard", "music-intro", "question", "lets-play", "commercial-break", "phone", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
   let muted = false;
@@ -283,5 +283,5 @@
     if (b.id !== "btn-final") play("click");
   });
 
-  window.Sfx = { play, music, has: (n) => !!files[n], playing: () => !!(musicFile && !musicFile.paused) };
+  window.Sfx = { play, music, has: (n) => !!files[n], stop: (n) => { const x = files[n]; if (x) x.pause(); }, playing: () => !!(musicFile && !musicFile.paused) };
 })();
