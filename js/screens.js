@@ -163,6 +163,7 @@
     clearInterval(slideTimer);
     showScreen("intro");
     playIntro();
+    window.Sfx.music("intro");
   }
 
   $("title").innerHTML = D.title.split(" ").map((w, i) => `<span class="w" style="--i:${i}">${w}</span>`).join(" ");
@@ -191,5 +192,10 @@
   $("btn-prize-next").onclick = D.showGreeting ? showGreeting : restart;
   if (!D.showGreeting) $("btn-prize-next").textContent = "משחק חדש";
   $("btn-restart").onclick = restart;
-  playIntro();
+  // מסך כניסה: הלחיצה הראשונה פותחת את הסאונד בדפדפן, ומיד מתחילה מוזיקת הפתיחה
+  $("btn-gate").onclick = () => {
+    window.Sfx.music("intro");
+    showScreen("intro");
+    playIntro();
+  };
 })();

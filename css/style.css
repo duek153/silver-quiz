@@ -622,3 +622,10 @@ body.suspense[data-difficulty="medium"] #app::after { animation: heartbeat 1.4s 
 h1 { font-size: clamp(2.4rem, min(7.4vw, 12.5vh), 7.6rem); }
 .subtitle { font-size: clamp(1.2rem, min(3vw, 5vh), 3rem); }
 .intro-box { gap: clamp(1vh, 2.4vh, 3vh); }
+
+/* ===== מסך כניסה (פותח סאונד) ===== */
+#screen-gate { background: radial-gradient(ellipse at 50% 45%, #0c1c52, #02040f 75%); }
+.gate-box { display: flex; flex-direction: column; align-items: center; gap: 3vh; }
+.gate-ic { font-size: clamp(4rem, 12vh, 8rem); filter: drop-shadow(0 0 30px var(--accent)); animation: gatePulse 1.6s ease-in-out infinite; }
+.gate-tx { margin: 0; font-family: var(--display); font-size: clamp(1.6rem, 4vw, 3.6rem); color: var(--silver); text-shadow: 0 0 24px rgba(120, 150, 255, .6); }
+@keyframes gatePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
