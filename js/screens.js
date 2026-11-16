@@ -163,7 +163,7 @@
     clearInterval(slideTimer);
     showScreen("intro");
     playIntro();
-    window.Sfx.music("intro");
+    introSound();
   }
 
   $("title").innerHTML = D.title.split(" ").map((w, i) => `<span class="w" style="--i:${i}">${w}</span>`).join(" ");
@@ -193,9 +193,16 @@
   if (!D.showGreeting) $("btn-prize-next").textContent = "משחק חדש";
   $("btn-restart").onclick = restart;
   // מסך כניסה: הלחיצה הראשונה פותחת את הסאונד בדפדפן, ומיד מתחילה מוזיקת הפתיחה
+  let introTimer = null;
+  function introSound() {
+    if (window.Sfx.has("music-intro")) { window.Sfx.music("intro"); return; } // קובץ מוזיקה מותאם: מתנגן מיד
+    window.Sfx.play("introhit");
+    clearTimeout(introTimer);
+    introTimer = setTimeout(() => window.Sfx.music("intro"), 1500);
+  }
   $("btn-gate").onclick = () => {
-    window.Sfx.music("intro");
     showScreen("intro");
     playIntro();
+    introSound();
   };
 })();

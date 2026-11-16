@@ -5,7 +5,7 @@
   const LETTERS = ["א", "ב", "ג", "ד"];
   const REVEAL_DELAY = { easy: 2500, medium: 3500, hard: 5000 };  // זמן מתח לפני חשיפה (יעודן בשלב העיצוב)
   const NEXT_DELAY = 2500;     // זמן אחרי תשובה נכונה לפני השאלה הבאה
-  const WRONG_DELAY = 3000;    // זמן אזעקה/אדום לפני ניסיון חוזר
+  const WRONG_DELAY_DEFAULT = 3000;  // זמן אזעקה/אדום לפני ניסיון חוזר
 
   let current = 0;     // אינדקס שאלה
   let selected = -1;
@@ -18,6 +18,18 @@
   let locked = false;  // חוסם לחיצות בזמן חשיפה
 
   const fmt = (n) => n.toLocaleString("he-IL") + " ₪";
+
+  // ספירה עולה של הסכום (מ-from ל-to)
+  function countUp(el, from, to, ms, suffix) {
+    const t0 = performance.now();
+    const tick = (now) => {
+      const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = "יש לכם " + fmt(Math.round(from + (to - from) * e)) + suffix;
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    el.textContent = "יש לכם " + fmt(from) + suffix;
+    requestAnimationFrame(tick);
+  }
 
   function buildLadder(ol) {
     ol = ol || $("ladder");
@@ -74,7 +86,8 @@
       box.appendChild(b);
     });
     updateLadder();
-    window.Sfx.music(difficultyOf(current)); // מתגברת לפי שלב הקושי
+    if (!isRetry && current === 0 && window.Sfx.has("question")) { window.Sfx.play("question"); window.Sfx.music(null); } // פתיחת המשחק: צליל "שאלה" מותאם
+    else window.Sfx.music(difficultyOf(current)); // מתגברת לפי שלב הקושי
 
     //הופעת השאלה, ואז התשובות אחת אחת
     const qEl = $("question");
@@ -148,7 +161,7 @@
       setTimeout(() => {
         document.body.classList.remove("alarm");
         showQuestion(true); //לא מפסידים: אותה שאלה, ניסיון חוזר
-      }, WRONG_DELAY);
+      }, window.Sfx.has("wrong") ? 6200 : WRONG_DELAY_DEFAULT); // קובץ הטעות הארוך: מחכים שיסתיים
     }
   }
 
@@ -191,10 +204,18 @@
     });
     mark(current); // השלב שנכבש עכשיו
     const safe = D.safeLevels.includes(current + 1);
-    $("route-msg").textContent = "יש לכם " + fmt(D.ladder[current]) + (safe ? " · נקודת ביטחון!" : "");
+    const from = current > 0 ? D.ladder[current - 1] : 0, to = D.ladder[current];
+    const suffix = safe ? " · נקודת ביטחון!" : "";
+    countUp($("route-msg"), from, to, 1200, suffix); // הסכום נספר למעלה
+    const ph = $("route-photo");
+    if (safe && D.introPhotos.length) {   // בנקודות ביטחון: תמונה שלהם ברקע
+      const src = D.introPhotos[(D.safeLevels.indexOf(current + 1) * 3 + 1) % D.introPhotos.length];
+      ph.style.backgroundImage = "url('" + new URL(src, document.baseURI).href + "')";
+      ph.classList.add("on");
+    } else ph.classList.remove("on");
     $("route").classList.remove("hidden");
     $("route").classList.toggle("safe", safe);
-    if (safe) { window.Sfx.play("safe"); window.confettiBurst(3800); } else window.Sfx.play("step");
+    if (safe) { window.Sfx.play("safe"); window.confettiBurst(3800); } else window.Sfx.play("whoosh");
     setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1700); // עוברים לשלב הבא
     setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? 5200 : 3800);
   }

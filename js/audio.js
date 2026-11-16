@@ -1,8 +1,8 @@
 // צלילים ומוזיקה: הכל מסונתז בקוד (Web Audio).
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
-  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "prize",
-                 "music-easy", "music-medium", "music-hard", "music-intro", "music-party"];
+  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "whoosh", "introhit", "prize",
+                 "music-easy", "music-medium", "music-hard", "music-intro", "question", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
   let muted = false;
@@ -74,6 +74,24 @@
     src.stop(t + dur + 0.05);
   }
 
+  // סחיפת רעש (וווש): תדר מרכזי שעובר מ-f0 ל-f1
+  function sweep(t, dur, f0, f1, vol, dest) {
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    const f = ctx.createBiquadFilter();
+    f.type = "bandpass";
+    f.Q.value = 1.2;
+    f.frequency.setValueAtTime(f0, t);
+    f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(dest || master);
+    src.start(t);
+    src.stop(t + dur + 0.05);
+  }
+
   // ===== אפקטים =====
   const C = [261.63, 329.63, 392.0], F = [349.23, 440.0, 523.25], G = [392.0, 493.88, 587.33];
   const brass = (freqs, t, dur) => chord(freqs, t, dur, { type: "sawtooth", vol: 0.12, cutoff: 2200, attack: 0.03 });
@@ -97,10 +115,24 @@
     },
     tick(t) { tone(1200, t, 0.04, { type: "square", vol: 0.1 }); },
     final(t) {
-      tone(55, t, 1.8, { type: "sine", vol: 0.6 });
-      tone(110, t, 1.6, { type: "sawtooth", vol: 0.3, cutoff: 500, slideTo: 55 });
-      tone(220, t + 0.1, 1.4, { type: "triangle", vol: 0.12, slideTo: 440 });
-      noise(t, 0.35, 0.2, 800);
+      // פגיעה עמוקה + סחיפה עולה
+      tone(95, t, 1.3, { type: "sine", vol: 0.75, slideTo: 38 });
+      tone(55, t, 1.9, { type: "sine", vol: 0.5 });
+      tone(220, t, 0.9, { type: "sawtooth", vol: 0.08, cutoff: 900, slideTo: 880 });
+      noise(t, 0.5, 0.25, 300);
+      sweep(t, 0.9, 180, 2600, 0.14);
+    },
+    whoosh(t) { sweep(t, 0.7, 220, 3600, 0.24); },
+    introhit(t) {
+      // נפח עולה ואז פגיעה תזמורתית גדולה (בשנייה 1.5)
+      sweep(t, 1.5, 120, 2800, 0.2);
+      tone(110, t, 1.5, { type: "sawtooth", vol: 0.1, cutoff: 700, slideTo: 440, attack: 1.2 });
+      tone(55, t, 1.5, { type: "sine", vol: 0.3, slideTo: 110, attack: 1.2 });
+      const h = t + 1.5;
+      tone(75, h, 2.2, { type: "sine", vol: 0.8, slideTo: 38 });
+      chord([110, 130.81, 164.81, 220], h, 1.7, { type: "sawtooth", vol: 0.12, cutoff: 2200, attack: 0.02 });
+      chord([440, 523.25, 659.25], h, 1.4, { type: "sawtooth", vol: 0.07, cutoff: 2800, attack: 0.02 });
+      noise(h, 1.2, 0.28, 500);
     },
     correct(t) {
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
@@ -142,7 +174,7 @@
   }
 
   // ===== מוזיקה =====
-  const BPM = { easy: 92, medium: 112, hard: 132, party: 128, intro: 96 };
+  const BPM = { easy: 92, medium: 112, hard: 132, party: 128, intro: 112 };
   const ROOTS = [110.0, 87.31, 73.42, 82.41];   // לה מינור, פה, רה מינור, מי
   const THIRDS = [1.189, 1.26, 1.189, 1.26];
   const MELODY = [[659.25, 523.25], [698.46, 440.0], [587.33, 698.46], [659.25, 830.61]];
@@ -152,18 +184,17 @@
   function scheduleStep(mode, s, t, d, out) {
     const p = s % 8;
     if (mode === "intro") {
-      // מוזיקת פתיחה: ארפג'יו חגיגי רגוע (דו, לה מינור, פה, סול)
+      // מוזיקת פתיחה: פעימה דוחפת, בס, פגיעות פליז וסנר (לה מינור, פה, סול)
       const bar = Math.floor(s / 8) % 4;
-      const root = [261.63, 220.0, 174.61, 196.0][bar];
-      const third = [1.26, 1.189, 1.26, 1.26][bar];
-      const arp = [1, third, 1.498, 2, 1.498, third, 1, 1.498];
-      tone(root * 2 * arp[p], t, d * 1.8, { type: "triangle", vol: 0.12, attack: 0.01, dest: out });
-      if (p === 0) {
-        chord([root, root * third, root * 1.498], t, d * 8, { type: "sine", vol: 0.09, attack: 0.4, dest: out });
-        tone(root / 2, t, d * 7.5, { type: "sine", vol: 0.35, attack: 0.1, dest: out });
-      }
-      if (p === 4) tone(root / 2, t, d * 3.5, { type: "sine", vol: 0.25, dest: out });
-      if (p === 6 && bar % 2 === 1) tone(root * 6, t, d * 2, { type: "sine", vol: 0.05, dest: out });
+      const root = [110.0, 110.0, 87.31, 98.0][bar];
+      const m3 = [1.189, 1.189, 1.26, 1.26][bar];
+      if (p === 0 || p === 4 || (p === 6 && bar % 2 === 1)) tone(135, t, 0.24, { type: "sine", vol: 0.6, slideTo: 45, dest: out });
+      tone(p % 2 ? root * 2 : root, t, d * 0.85, { type: "sawtooth", vol: p % 2 ? 0.1 : 0.2, cutoff: 340, dest: out });
+      if (p === 2 || p === 6) noise(t, 0.12, 0.17, 1800, out);
+      if (p % 2 === 1) noise(t, 0.03, 0.05, 7000, out);
+      if (p === 0) chord([root * 2, root * 2 * m3, root * 2 * 1.498, root * 4], t, d * 2.2, { type: "sawtooth", vol: 0.1, cutoff: 2000, attack: 0.02, dest: out });
+      if (p === 4 && bar % 2 === 1) chord([root * 2, root * 2 * m3, root * 2 * 1.498], t, d * 1.2, { type: "sawtooth", vol: 0.08, cutoff: 1800, attack: 0.02, dest: out });
+      if (p === 7) tone(root * 8 * m3, t, d * 1.5, { type: "sine", vol: 0.05, dest: out });
       return;
     }
     if (mode === "party") {
@@ -174,18 +205,24 @@
       if (p === 0) chord([base, base * 1.26, base * 1.498], t, d * 8, { type: "sawtooth", vol: 0.05, cutoff: 1800, attack: 0.05, dest: out });
       return;
     }
-    // מוזיקת מתח: בס פועם, שעון מתקתק, מיתרים ומנגינה; בשלבים הקשים נוספות שכבות
+    // מוזיקת מתח: דופק בס (לאב-דאב), דרון לא נוח, צלילים גבוהים בודדים; בכל רמה נוספות שכבות
     const bar = Math.floor(s / 8) % 4;
-    const r = ROOTS[bar], third = THIRDS[bar];
+    const r = [110.0, 103.83, 98.0, 92.5][bar];   // יורד בהדרגה: לה, סול דיאז, סול, פה דיאז
     const lvl = mode === "easy" ? 0 : mode === "medium" ? 1 : 2;
-    if (lvl > 0 || p % 2 === 0) tone(r, t, d * 0.9, { type: "sawtooth", vol: 0.26, cutoff: 260 + lvl * 120, dest: out });
-    if (p % [4, 2, 1][lvl] === 0) {
-      noise(t, 0.025, 0.07, 5000, out);
-      tone(p % 4 === 0 ? 1800 : 1400, t, 0.03, { type: "square", vol: 0.04, dest: out });
+    const beat = (v, f) => tone(r * f, t, 0.32, { type: "sine", vol: v, slideTo: r * f * 0.55, dest: out });
+    if (p === 0) beat(0.7, 1);
+    if (p === 2) beat(0.45, 1.2);
+    if (lvl === 2 && p === 4) beat(0.6, 1);
+    if (lvl === 2 && p === 6) beat(0.4, 1.2);
+    if (lvl > 0) tone(r, t, d * 0.8, { type: "sawtooth", vol: 0.13, cutoff: 240 + lvl * 80, dest: out });
+    if (p === 0) chord(lvl === 2 ? [r * 2, r * 2 * 1.414, r * 4] : [r * 2, r * 2 * 1.0595], t, d * 8, { type: "sawtooth", vol: 0.05, cutoff: 700, attack: 0.5, dest: out });
+    const plink = [1.189, 1.414, 1.26, 1.5][bar];
+    if (p === 5 && (lvl > 0 || bar % 2 === 0)) tone(r * 8 * plink, t, d * 2, { type: "sine", vol: 0.07, dest: out });
+    if (lvl > 0 && p === 1) tone(r * 12 * plink, t, d * 1.5, { type: "sine", vol: 0.04, dest: out });
+    if (lvl === 2) {
+      if (p % 2 === 1) noise(t, 0.025, 0.06, 6000, out);
+      if (p === 0 && bar % 2 === 1) tone(r * 4 * 1.414, t, d * 1.2, { type: "square", vol: 0.05, cutoff: 1800, dest: out });
     }
-    if (p === 0) chord([r * 2, r * 2 * third, r * 3], t, d * 8, { type: "sawtooth", vol: 0.045, cutoff: 900, attack: 0.3, dest: out });
-    if (lvl > 0 && p % 4 === 0) tone(MELODY[bar][p / 4], t, d * 3.5, { type: "triangle", vol: 0.09, attack: 0.03, dest: out });
-    if (lvl === 2) tone(r * 8 * [1, third, 1.498, 2, 1.498, third, 1, third][p], t, d * 0.8, { type: "square", vol: 0.035, cutoff: 2400, dest: out });
   }
 
   function stopMusic() {
@@ -246,5 +283,5 @@
     if (b.id !== "btn-final") play("click");
   });
 
-  window.Sfx = { play, music };
+  window.Sfx = { play, music, has: (n) => !!files[n], playing: () => !!(musicFile && !musicFile.paused) };
 })();
