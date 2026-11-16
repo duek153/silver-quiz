@@ -156,6 +156,7 @@
   function renderQTimer(v) {
     const el = $("q-timer");
     el.textContent = v;
+    el.style.setProperty("--p", v / SECS * 100); // הטבעת שמתרוקנת
     el.classList.toggle("urgent", v <= 5);
   }
 

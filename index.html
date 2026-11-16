@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>מי רוצה להיות מיליונר? - חתונת הכסף</title>
   <!-- גופן Heebo (נטען רק כשיש אינטרנט; בלעדיו נשאר גופן המערכת) -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&family=Secular+One&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
 
     <section id="screen-intro" class="screen active">
       <div class="intro-box">
-        <p class="kicker">✦ 25 שנה ✦</p>
+        <div class="emblem"><span>25</span><small>שנה</small></div>
         <h1 id="title"></h1>
         <p id="subtitle" class="subtitle"></p>
         <button id="btn-start" class="big-btn">מתחילים</button>
@@ -30,12 +30,12 @@
       <div class="game-layout">
         <div class="game-main">
           <div class="lifelines">
-            <button id="ll-fifty" class="lifeline">50:50</button>
-            <button id="ll-phone" class="lifeline">📞 טלפון לילדים</button>
-            <button id="ll-audience" class="lifeline">👥 עזרת הקהל</button>
+            <button id="ll-fifty" class="lifeline"><span class="ll-ic">50:50</span><span class="ll-tx">חמישים חמישים</span></button>
+            <button id="ll-phone" class="lifeline"><span class="ll-ic">📞</span><span class="ll-tx">טלפון לילדים</span></button>
+            <button id="ll-audience" class="lifeline"><span class="ll-ic">👥</span><span class="ll-tx">עזרת הקהל</span></button>
           </div>
           <div class="q-top"><div id="q-meta" class="q-meta"></div><div id="q-timer" class="q-timer"></div></div>
-          <div id="question" class="question"></div>
+          <div class="q-wrap"><div id="question" class="question"></div></div>
           <div id="answers" class="answers"></div>
           <div id="confirm" class="confirm hidden">
             <span>תשובה סופית?</span>
