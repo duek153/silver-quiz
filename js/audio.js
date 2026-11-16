@@ -289,5 +289,5 @@
     if (b.id !== "btn-final" && !b.classList.contains("answer")) play("click"); // לתשובות יש צליל משלהן
   });
 
-  window.Sfx = { play, music, has: (n) => !!files[n], stop: (n) => { const x = files[n]; if (x) x.pause(); }, playing: () => !!(musicFile && !musicFile.paused) };
+  window.Sfx = { play, music, has: (n) => !!files[n], stop: (n) => { const x = files[n]; if (!x) return; let v = 1; const iv = setInterval(() => { v -= 0.25; if (v <= 0) { clearInterval(iv); x.pause(); x.volume = 1; } else x.volume = v; }, 40); }, playing: () => !!(musicFile && !musicFile.paused) };
 })();

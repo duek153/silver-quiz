@@ -3,9 +3,9 @@
   const D = window.GAME_DATA;
   const $ = (id) => document.getElementById(id);
   const LETTERS = ["א", "ב", "ג", "ד"];
-  const REVEAL_DELAY = { easy: 2500, medium: 3500, hard: 5000 };  // זמן מתח לפני חשיפה (יעודן בשלב העיצוב)
-  const REVEAL_FILE = { easy: 7000, medium: 10000, hard: 14000 }; // כשיש קובץ "תשובה סופית" ארוך
-  const NEXT_DELAY = 2500;     // זמן אחרי תשובה נכונה לפני השאלה הבאה
+  const REVEAL_DELAY = { easy: 1800, medium: 2600, hard: 3800 };  // זמן מתח לפני חשיפה
+  const REVEAL_FILE = { easy: 3500, medium: 5000, hard: 6500 }; // כשיש קובץ "תשובה סופית" ארוך
+  const NEXT_DELAY = 1800;     // זמן אחרי תשובה נכונה לפני השאלה הבאה
   const WRONG_DELAY_DEFAULT = 3000;  // זמן אזעקה/אדום לפני ניסיון חוזר
 
   let current = 0;     // אינדקס שאלה
@@ -21,14 +21,14 @@
   const fmt = (n) => n.toLocaleString("he-IL") + " ₪";
 
   // ספירה עולה של הסכום (מ-from ל-to)
-  function countUp(el, from, to, ms, suffix) {
+  function countUp(el, from, to, ms) {
     const t0 = performance.now();
     const tick = (now) => {
       const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
-      el.textContent = "יש לכם " + fmt(Math.round(from + (to - from) * e)) + suffix;
+      el.textContent = fmt(Math.round(from + (to - from) * e));
       if (k < 1) requestAnimationFrame(tick);
     };
-    el.textContent = "יש לכם " + fmt(from) + suffix;
+    el.textContent = fmt(from);
     requestAnimationFrame(tick);
   }
 
@@ -203,31 +203,45 @@
     }, 1000);
   }
 
-  // ===== מסך המסלול בין שאלה לשאלה =====
+  // ===== מסך המסלול בין שאלה לשאלה: מסלול אופקי של 18 שלבים =====
   function showRoute(done) {
-    const ol = $("route-ladder");
-    buildLadder(ol);
-    const mark = (cur) => ol.querySelectorAll("li").forEach((li) => {
-      const lvl = +li.dataset.level;
-      li.classList.toggle("done", lvl < cur);
-      li.classList.toggle("current", lvl === cur);
-    });
-    mark(current); // השלב שנכבש עכשיו
-    const safe = D.safeLevels.includes(current + 1);
+    const track = $("route-track");
+    const n = current + 1, total = D.questions.length;
+    track.innerHTML = '<div class="route-base"></div><div class="route-fill" id="route-fill"></div>';
+    for (let i = 0; i < total; i++) {
+      const nd = document.createElement("div");
+      nd.className = "node" + (D.safeLevels.includes(i + 1) ? " safe" : "") + (i === total - 1 ? " top" : "");
+      nd.dataset.i = i;
+      nd.innerHTML = "<i>" + (i + 1) + "</i>" + ((D.safeLevels.includes(i + 1) || i === total - 1) ? "<b>" + D.ladder[i].toLocaleString("he-IL") + "</b>" : "");
+      track.appendChild(nd);
+    }
+    const mark = (pos) => {
+      track.querySelectorAll(".node").forEach((nd) => {
+        const i = +nd.dataset.i;
+        nd.classList.toggle("done", i < pos);
+        nd.classList.toggle("current", i === pos);
+      });
+      $("route-fill").style.width = (pos / (total - 1) * 94.44) + "%";
+    };
+    mark(current - 1 < 0 ? 0 : current); // השלב שנכבש עכשיו
+    const safe = D.safeLevels.includes(n);
     const from = current > 0 ? D.ladder[current - 1] : 0, to = D.ladder[current];
-    const suffix = safe ? " · נקודת ביטחון!" : "";
-    countUp($("route-msg"), from, to, 1200, suffix); // הסכום נספר למעלה
+    countUp($("route-msg"), from, to, 1000); // הסכום נספר למעלה
+    $("route-badge").textContent = safe ? "◆ נקודת ביטחון ◆" : "";
+    const nextSafe = D.safeLevels.find((l) => l > n);
+    const target = nextSafe || total, left = target - n;
+    $("route-sub").textContent = "שאלה " + n + " מתוך " + total + " · " + (nextSafe ? "נקודת הביטחון הבאה" : "הפרס הגדול") + ": " + fmt(D.ladder[target - 1]) + " (בעוד " + left + (left === 1 ? " שאלה)" : " שאלות)");
     const ph = $("route-photo");
-    if (safe && D.introPhotos.length) {   // בנקודות ביטחון: תמונה שלהם ברקע
-      const src = D.introPhotos[(D.safeLevels.indexOf(current + 1) * 3 + 1) % D.introPhotos.length];
+    if (D.introPhotos.length) {   // תמונה שלהם ברקע, מתחלפת בכל מעבר
+      const src = D.introPhotos[(current * 2 + 1) % D.introPhotos.length];
       ph.style.backgroundImage = "url('" + new URL(src, document.baseURI).href + "')";
       ph.classList.add("on");
     } else ph.classList.remove("on");
     $("route").classList.remove("hidden");
     $("route").classList.toggle("safe", safe);
     if (safe) { window.Sfx.play(window.Sfx.has("commercial-break") ? "commercial-break" : "safe"); window.confettiBurst(4500); } else window.Sfx.play("whoosh");
-    setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1700); // עוברים לשלב הבא
-    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? (window.Sfx.has("commercial-break") ? 10500 : 5200) : 3800);
+    setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1300); // המסלול מתקדם לשלב הבא
+    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? (window.Sfx.has("commercial-break") ? 10500 : 5200) : 3000);
   }
 
   function useLifeline(name) {
