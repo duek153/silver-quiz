@@ -162,14 +162,34 @@
     stopConfetti();
     clearInterval(slideTimer);
     showScreen("intro");
+    playIntro();
   }
 
-  $("title").textContent = D.title;
+  $("title").innerHTML = D.title.split(" ").map((w, i) => `<span class="w" style="--i:${i}">${w}</span>`).join(" ");
   $("subtitle").textContent = D.subtitle;
 
-  $("btn-start").onclick = () => { showScreen("slideshow"); startSlideshow(); };
+  // כניסה דרמטית של מסך הפתיחה (נטענת מחדש בכל חזרה אליו)
+  function playIntro() {
+    const el = $("screen-intro");
+    el.classList.remove("enter");
+    void el.offsetWidth;
+    el.classList.add("enter");
+  }
+
+  // לחיצה על "מתחילים": הבזק אור, מוזיקת פתיחה, ומעבר למצגת
+  let starting = false;
+  $("btn-start").onclick = () => {
+    if (starting) return;
+    starting = true;
+    const f = $("flash");
+    f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+    window.Sfx.music("intro");
+    window.Sfx.play("step");
+    setTimeout(() => { showScreen("slideshow"); startSlideshow(); starting = false; }, 450);
+  };
   $("btn-slides-next").onclick = () => { clearInterval(slideTimer); showScreen("game"); window.startGame(); };
   $("btn-prize-next").onclick = D.showGreeting ? showGreeting : restart;
   if (!D.showGreeting) $("btn-prize-next").textContent = "משחק חדש";
   $("btn-restart").onclick = restart;
+  playIntro();
 })();

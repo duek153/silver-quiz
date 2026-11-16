@@ -2,7 +2,7 @@
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
   const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "prize",
-                 "music-easy", "music-medium", "music-hard", "music-party"];
+                 "music-easy", "music-medium", "music-hard", "music-intro", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
   let muted = false;
@@ -142,7 +142,7 @@
   }
 
   // ===== מוזיקה =====
-  const BPM = { easy: 92, medium: 112, hard: 132, party: 128 };
+  const BPM = { easy: 92, medium: 112, hard: 132, party: 128, intro: 96 };
   const ROOTS = [110.0, 87.31, 73.42, 82.41];   // לה מינור, פה, רה מינור, מי
   const THIRDS = [1.189, 1.26, 1.189, 1.26];
   const MELODY = [[659.25, 523.25], [698.46, 440.0], [587.33, 698.46], [659.25, 830.61]];
@@ -151,6 +151,21 @@
 
   function scheduleStep(mode, s, t, d, out) {
     const p = s % 8;
+    if (mode === "intro") {
+      // מוזיקת פתיחה: ארפג'יו חגיגי רגוע (דו, לה מינור, פה, סול)
+      const bar = Math.floor(s / 8) % 4;
+      const root = [261.63, 220.0, 174.61, 196.0][bar];
+      const third = [1.26, 1.189, 1.26, 1.26][bar];
+      const arp = [1, third, 1.498, 2, 1.498, third, 1, 1.498];
+      tone(root * 2 * arp[p], t, d * 1.8, { type: "triangle", vol: 0.12, attack: 0.01, dest: out });
+      if (p === 0) {
+        chord([root, root * third, root * 1.498], t, d * 8, { type: "sine", vol: 0.09, attack: 0.4, dest: out });
+        tone(root / 2, t, d * 7.5, { type: "sine", vol: 0.35, attack: 0.1, dest: out });
+      }
+      if (p === 4) tone(root / 2, t, d * 3.5, { type: "sine", vol: 0.25, dest: out });
+      if (p === 6 && bar % 2 === 1) tone(root * 6, t, d * 2, { type: "sine", vol: 0.05, dest: out });
+      return;
+    }
     if (mode === "party") {
       const base = 130.81 * PARTY_PROG[Math.floor(s / 8) % 4];
       tone(base * 2 * PARTY_ARP[p], t, d * 1.1, { type: "triangle", vol: 0.14, dest: out });
