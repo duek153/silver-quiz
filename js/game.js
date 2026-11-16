@@ -56,7 +56,8 @@
     renderQTimer(SECS);
     locked = true; //נפתח אחרי שכל התשובות נחשפו
     $("confirm").classList.add("hidden");
-    $("q-meta").textContent = `שאלה ${current + 1} · ${fmt(D.ladder[current])}`;
+    $("q-meta").textContent = `שאלה ${current + 1} מתוך ${D.questions.length} · ${fmt(D.ladder[current])}`;
+    $("m-progress").firstElementChild.style.width = ((current + 1) / D.questions.length * 100) + "%";
     $("question").textContent = q.q;
     document.body.dataset.difficulty = difficultyOf(current);
 
@@ -192,9 +193,10 @@
     const safe = D.safeLevels.includes(current + 1);
     $("route-msg").textContent = "יש לכם " + fmt(D.ladder[current]) + (safe ? " · נקודת ביטחון!" : "");
     $("route").classList.remove("hidden");
-    window.Sfx.play("step");
+    $("route").classList.toggle("safe", safe);
+    if (safe) { window.Sfx.play("safe"); window.confettiBurst(3800); } else window.Sfx.play("step");
     setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1700); // עוברים לשלב הבא
-    setTimeout(() => { $("route").classList.add("hidden"); done(); }, 3800);
+    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? 5200 : 3800);
   }
 
   function useLifeline(name) {
@@ -276,9 +278,20 @@
     }, 100);
   }
 
-  $("ll-fifty").onclick = fiftyFifty;
-  $("ll-phone").onclick = phoneKids;
-  $("ll-audience").onclick = askAudience;
+  // אנימציית סיבוב קצרה לפני שהגלגל נפתח
+  function withSpin(name, fn) {
+    if (locked || used[name]) return;
+    const ic = $("ll-" + name).firstElementChild;
+    ic.classList.remove("spin");
+    void ic.offsetWidth;
+    ic.classList.add("spin");
+    window.Sfx.play("step");
+    locked = true;
+    setTimeout(() => { locked = false; fn(); }, 650);
+  }
+  $("ll-fifty").onclick = () => withSpin("fifty", fiftyFifty);
+  $("ll-phone").onclick = () => withSpin("phone", phoneKids);
+  $("ll-audience").onclick = () => withSpin("audience", askAudience);
   $("modal-close").onclick = closeModal;
 
   window.startGame = function () {

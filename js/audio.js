@@ -1,7 +1,7 @@
 // צלילים ומוזיקה: הכל מסונתז בקוד (Web Audio).
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
-  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "prize",
+  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "prize",
                  "music-easy", "music-medium", "music-hard", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
@@ -87,6 +87,13 @@
     step(t) {
       tone(523.25, t, 0.12, { type: "triangle", vol: 0.25 });
       tone(783.99, t + 0.1, 0.3, { type: "triangle", vol: 0.25 });
+    },
+    safe(t) {
+      brass(C, t, 0.25); brass(F, t + 0.3, 0.25);
+      brass([523.25, 659.25, 783.99, 1046.5], t + 0.6, 1.8);
+      tone(130.81, t + 0.6, 1.6, { type: "sine", vol: 0.45 });
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(f, t + 0.7 + i * 0.12, 0.5, { type: "triangle", vol: 0.14 }));
+      noise(t + 0.6, 1.2, 0.1, 6000);
     },
     tick(t) { tone(1200, t, 0.04, { type: "square", vol: 0.1 }); },
     final(t) {
