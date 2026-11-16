@@ -122,6 +122,7 @@
     document.querySelectorAll(".answer").forEach((b) => b.classList.remove("selected"));
     selected = i;
     answerEl(i).classList.add("selected");
+    window.Sfx.play("select"); // צליל קצר בבחירה
     $("confirm").classList.remove("hidden");
   }
 

@@ -1,7 +1,7 @@
 // צלילים ומוזיקה: הכל מסונתז בקוד (Web Audio).
 // כדי להחליף צליל: שמים בתיקייה sounds קובץ mp3 בשם המתאים (ראו sounds/README.txt).
 (function () {
-  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "whoosh", "introhit", "prize",
+  const NAMES = ["click", "final", "correct", "wrong", "tick", "timeup", "step", "safe", "select", "whoosh", "introhit", "prize",
                  "music-easy", "music-medium", "music-hard", "music-intro", "question", "lets-play", "commercial-break", "phone", "music-party"];
   const files = {};        // צלילים שהוחלפו בקובץ
   let ctx = null, master = null, noiseBuf = null;
@@ -112,6 +112,12 @@
       tone(130.81, t + 0.6, 1.6, { type: "sine", vol: 0.45 });
       [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(f, t + 0.7 + i * 0.12, 0.5, { type: "triangle", vol: 0.14 }));
       noise(t + 0.6, 1.2, 0.1, 6000);
+    },
+    select(t) {
+      // צליל קצר בבחירת תשובה (לפני "תשובה סופית")
+      tone(520, t, 0.09, { type: "triangle", vol: 0.28, slideTo: 760 });
+      tone(1040, t + 0.04, 0.1, { type: "sine", vol: 0.1 });
+      noise(t, 0.03, 0.08, 4000);
     },
     tick(t) { tone(1200, t, 0.04, { type: "square", vol: 0.1 }); },
     final(t) {
@@ -280,7 +286,7 @@
     const b = e.target.closest("button");
     if (!b) return;
     if (b.id === "btn-mute") { toggleMute(); return; }
-    if (b.id !== "btn-final") play("click");
+    if (b.id !== "btn-final" && !b.classList.contains("answer")) play("click"); // לתשובות יש צליל משלהן
   });
 
   window.Sfx = { play, music, has: (n) => !!files[n], stop: (n) => { const x = files[n]; if (x) x.pause(); }, playing: () => !!(musicFile && !musicFile.paused) };
