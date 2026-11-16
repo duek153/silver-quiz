@@ -135,6 +135,7 @@
 
   $("btn-start").onclick = () => { showScreen("slideshow"); startSlideshow(); };
   $("btn-slides-next").onclick = () => { clearInterval(slideTimer); showScreen("game"); window.startGame(); };
-  $("btn-prize-next").onclick = showGreeting;
+  $("btn-prize-next").onclick = D.showGreeting ? showGreeting : restart;
+  if (!D.showGreeting) $("btn-prize-next").textContent = "משחק חדש";
   $("btn-restart").onclick = restart;
 })();

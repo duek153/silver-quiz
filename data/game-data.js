@@ -53,6 +53,8 @@ window.GAME_DATA = {
   },
 
   // ברכה מהילדים - לערוך בהמשך
+  // להחזיר את מסך הברכה: לשנות ל-true (ולערוך את הטקסט והתמונות למטה)
+  showGreeting: false,
   greeting: {
     text: "כאן יבוא הטקסט של הברכה מהילדים.",
     photos: [] // למשל "images/greeting/1.jpg"
