@@ -442,6 +442,7 @@ body.alarm #alarm-overlay span { animation: alarmShake .25s linear infinite; }
 .reveal .t-field:nth-of-type(2) { animation-delay: 2.8s; }
 .reveal .t-field:nth-of-type(3) { animation-delay: 3.6s; }
 .reveal .t-field:nth-of-type(4) { animation-delay: 4.6s; }
+.reveal .t-field:nth-of-type(5) { animation-delay: 5.6s; }
 .t-field small { display: block; color: #56607a; font-size: clamp(.85rem, 1.3vw, 1.4rem); }
 .t-field strong { font-size: clamp(1.4rem, 2.8vw, 3rem); }
 .t-dest strong { font-size: clamp(3rem, 8vw, 8rem); line-height: 1.05; color: var(--accent-d); }
@@ -461,7 +462,7 @@ body.alarm #alarm-overlay span { animation: alarmShake .25s linear infinite; }
 }
 
 .big-btn.late { opacity: 0; }
-.reveal .big-btn.late { animation: fadeUp .8s 6s both; }
+.reveal .big-btn.late { animation: fadeUp .8s 6.8s both; }
 
 /* ===== ברכה ומצגת ===== */
 .greeting-text {
@@ -505,3 +506,6 @@ body.alarm #alarm-overlay span { animation: alarmShake .25s linear infinite; }
   .t-stub { width: 100%; border-right: 0; border-top: 4px dashed var(--silver); }
   .slides .empty { width: 70vw; height: 16vh; }
 }
+
+.t-hotel strong { direction: ltr; display: block; text-align: right; font-size: clamp(1.1rem, 2.1vw, 2.3rem); color: var(--navy-2); }
+.t-hotel em { display: block; margin-top: .3vh; font-style: normal; font-weight: 700; color: var(--accent-d); font-size: clamp(1rem, 1.7vw, 1.8rem); }

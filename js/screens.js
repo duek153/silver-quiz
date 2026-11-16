@@ -96,6 +96,8 @@
     $("t-passengers").textContent = D.ticket.passengers;
     $("t-destination").textContent = D.ticket.destination;
     $("t-dates").textContent = D.ticket.dates;
+    $("t-hotel").textContent = D.ticket.hotel;
+    $("t-hotel-note").textContent = D.ticket.hotelNote;
     showScreen("prize");
     const s = $("screen-prize");
     s.classList.remove("reveal");

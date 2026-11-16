@@ -41,13 +41,15 @@ window.GAME_DATA = {
   ],
 
   // תמונות למצגת הפתיחה - שימו קבצים ב-images/intro/ והוסיפו כאן שמות, למשל: "images/intro/1.jpg"
-  introPhotos: [],
+  introPhotos: ["images/intro/1.jpg", "images/intro/2.jpg", "images/intro/3.jpg", "images/intro/4.jpg", "images/intro/5.jpg", "images/intro/6.jpg", "images/intro/7.jpg", "images/intro/8.jpg"],
 
   // כרטיס הטיסה
   ticket: {
     passengers: "שלומי ואביבה שמעון",
     destination: "פראג",
-    dates: "20.11 עד 23.11"
+    dates: "20.11 עד 23.11",
+    hotel: "The Benedict Boutique Hotel, Old Town Prague",
+    hotelNote: "מתנה של סבתא דודה ומיטל"
   },
 
   // ברכה מהילדים - לערוך בהמשך
