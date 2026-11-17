@@ -142,6 +142,7 @@
     document.body.classList.add("suspense");
     answerEl(selected).classList.add("suspense");
     if (window.Sfx.has("final")) window.Sfx.music(null); // קובץ מותאם: מחליף את מוזיקת השאלה
+    window.Sfx.stop("lets-play"); window.Sfx.stop("question"); // סטינג פתיחת שאלה נעצר ברגע התשובה הסופית
     window.Sfx.play("final", true); // בלופ עד החשיפה
     setTimeout(reveal, (window.Sfx.has("final") ? REVEAL_FILE : REVEAL_DELAY)[difficultyOf(current)]);
   }
@@ -242,7 +243,7 @@
     $("route").classList.toggle("safe", safe);
     if (safe) { window.Sfx.play(window.Sfx.has("commercial-break") ? "commercial-break" : "safe"); window.confettiBurst(4500); } else window.Sfx.play("whoosh");
     setTimeout(() => { mark(current + 1); window.Sfx.play("step"); }, 1300); // המסלול מתקדם לשלב הבא
-    setTimeout(() => { $("route").classList.add("hidden"); done(); }, safe ? (window.Sfx.has("commercial-break") ? 10500 : 5200) : 3000);
+    setTimeout(() => { $("route").classList.add("hidden"); window.Sfx.stop("commercial-break"); done(); }, safe ? (window.Sfx.has("commercial-break") ? 10500 : 5200) : 3000);
   }
 
   function useLifeline(name) {

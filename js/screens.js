@@ -137,7 +137,7 @@
     s.classList.add("reveal");
     // ספירה לאחור בחשכה, ואז הכרטיס נחשף (תואם ל---d ב-CSS)
     [200, 1200, 2200].forEach((t) => setTimeout(() => window.Sfx.play("step"), t));
-    setTimeout(() => window.Sfx.play("prize"), 3400);
+    setTimeout(() => window.Sfx.play("prize", true), 3400); // בלופ עד "משחק חדש"
     setTimeout(() => startConfetti(true), 4600);
   };
 
@@ -159,6 +159,7 @@
 
   function restart() {
     window.Sfx.music(null);
+    window.Sfx.stop("prize");
     stopConfetti();
     clearInterval(slideTimer);
     showScreen("intro");
@@ -186,11 +187,13 @@
     f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
     window.Sfx.music("intro");
     window.Sfx.play("step");
-    setTimeout(() => { showScreen("slideshow"); startSlideshow(); starting = false; }, 450);
+    setTimeout(() => { showScreen("game"); window.startGame(); starting = false; }, 450); // ישר למשחק; הזכרונות בסוף
   };
-  $("btn-slides-next").onclick = () => { clearInterval(slideTimer); showScreen("game"); window.startGame(); };
-  $("btn-prize-next").onclick = D.showGreeting ? showGreeting : restart;
-  if (!D.showGreeting) $("btn-prize-next").textContent = "משחק חדש";
+  // הזכרונות שלנו: מסך אחרי כרטיס הטיסה
+  $("btn-slides-next").onclick = D.showGreeting ? () => { clearInterval(slideTimer); showGreeting(); } : restart;
+  $("btn-slides-next").textContent = D.showGreeting ? "ממשיכים לברכה" : "משחק חדש";
+  $("btn-prize-next").onclick = () => { stopConfetti(); showScreen("slideshow"); startSlideshow(); };
+  $("btn-prize-next").textContent = "ממשיכים לזכרונות";
   $("btn-restart").onclick = restart;
   // מסך כניסה: הלחיצה הראשונה פותחת את הסאונד בדפדפן, ומיד מתחילה מוזיקת הפתיחה
   let introTimer = null;
