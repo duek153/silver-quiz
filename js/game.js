@@ -142,7 +142,7 @@
     document.body.classList.add("suspense");
     answerEl(selected).classList.add("suspense");
     if (window.Sfx.has("final")) window.Sfx.music(null); // קובץ מותאם: מחליף את מוזיקת השאלה
-    window.Sfx.play("final");
+    window.Sfx.play("final", true); // בלופ עד החשיפה
     setTimeout(reveal, (window.Sfx.has("final") ? REVEAL_FILE : REVEAL_DELAY)[difficultyOf(current)]);
   }
 
@@ -152,7 +152,7 @@
     answerEl(selected).classList.remove("suspense");
     window.Sfx.stop("final");
     window.Sfx.music(null);
-    window.Sfx.play(selected === q.correct ? "correct" : "wrong");
+    window.Sfx.play(selected === q.correct ? "correct" : "wrong", selected !== q.correct);
     if (selected === q.correct) {
       answerEl(selected).classList.remove("selected");
       answerEl(selected).classList.add("correct");
@@ -170,6 +170,7 @@
       document.body.classList.add("alarm");
       setTimeout(() => {
         document.body.classList.remove("alarm");
+        window.Sfx.stop("wrong");
         showQuestion(true); //לא מפסידים: אותה שאלה, ניסיון חוזר
       }, window.Sfx.has("wrong") ? 6200 : WRONG_DELAY_DEFAULT); // קובץ הטעות הארוך: מחכים שיסתיים
     }
@@ -282,7 +283,7 @@
       '<button id="timer-start" class="big-btn">התקשרתם? מפעילים טיימר</button>');
     $("timer-start").onclick = () => {
       $("timer-start").remove();
-      window.Sfx.play("phone"); // קובץ מותאם לשיחה (אם קיים)
+      window.Sfx.play("phone", true); // קובץ מותאם לשיחה (אם קיים)
       let left = 30;
       const t = $("timer");
       phoneTimer = setInterval(() => {
@@ -293,6 +294,7 @@
         if (left <= 0) {
           clearInterval(phoneTimer);
           t.textContent = "הזמן נגמר!";
+          window.Sfx.stop("phone");
         }
       }, 1000);
     };

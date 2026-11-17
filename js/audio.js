@@ -166,12 +166,14 @@
     }
   };
 
-  function play(name) {
+  function play(name, loop) {
     ensure();
     if (name === "prize") stopMusic();
     const a = files[name];
     if (a) {
       a.currentTime = 0;
+      a.loop = !!loop; // לופ: חוזר עד שעוצרים אותו (stop)
+      a.volume = 1;
       a.muted = muted;
       a.play().catch(() => {});
       return;
